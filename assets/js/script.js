@@ -38,8 +38,8 @@ function showQuestion(index) {
     resetQuestion()
     // takes the question from the questions object and inputs into question field in the quiz box
     questionEl.innerText = questions[index].question
-    // // cycles through answers of the question, in question, and adds the answers as buttons
     
+    // cycles through answers of the current question and adds the answers as buttons
     questions[index].answer.forEach(answer => { 
         // creates the button element for each answer
         const button = document.createElement('button')
@@ -65,8 +65,9 @@ function resetQuestion() {
     }
 }
 
-let ansCorrect = 0
-let ansWrong = 0
+// // use when figuring out final score
+// let ansCorrect = 0
+
 // function for when an answer is selected
 function answerSelect(event) { 
     // targets the button that was clicked
@@ -74,6 +75,7 @@ function answerSelect(event) {
     if (this.dataset.correct) {
         alert('Correct')
     } else {
+        timeRemaining = timeRemaining - 5;
         alert('Incorrect!')
     }
     currentQuestionIndex++
@@ -81,9 +83,8 @@ function answerSelect(event) {
 }
 
 let timeLeft = ''
-let timeRemaining = 10
+let timeRemaining = 25
 function timer() { 
-    
     const timeInterval = setInterval(function() { 
         if (timeRemaining >= 0) { 
             console.log(timeRemaining, timeLeft)
@@ -94,34 +95,13 @@ function timer() {
             alert('Times Up!')
             clearInterval(timeInterval)
         }
+
+        // decrement timer on wrong answers
     }, 1000)
 }
-function decrementTimer() { 
 
-}
-// // retrives the true 'correct' value in the answers dataset --used for storing info about # of correct answers in localStorage
-// const correct = selectedButton.dataset.correct
-// if (correct) { 
-//     let correctAns = localStorage.getItem('ansCorrect')
-//     let numAns = parseInt(correctAns)
-//     if (isNaN(numAns)) { 
-//         numAns = 1
-//     } else { 
-//         numAns++
-//     }
-//     localStorage.setItem('ansCorrect', numAns.toString())
-// } 
-// else { 
-//     let wrongAns = localStorage.getItem('ansWrong')
-//     let numAns = parseInt(wrongAns)
-//     if (isNaN(numAns)) { 
-//         numAns = 1
-//     } else { 
-//         numAns++
-//     }
-//     localStorage.setItem('ansWrong', numAns.toString())
-// }
 
+// questions/answers object
 const questions = [
     {
         question: '2+2=?',
@@ -149,3 +129,27 @@ const questions = [
         correct: 'Dog'
     }
 ]
+
+
+    // // retrives the true 'correct' value in the answers dataset --used for storing info about # of correct answers in localStorage
+    // const correct = selectedButton.dataset.correct
+    // if (correct) { 
+    //     let correctAns = localStorage.getItem('ansCorrect')
+    //     let numAns = parseInt(correctAns)
+    //     if (isNaN(numAns)) { 
+    //         numAns = 1
+    //     } else { 
+    //         numAns++
+    //     }
+    //     localStorage.setItem('ansCorrect', numAns.toString())
+    // } 
+    // else { 
+    //     let wrongAns = localStorage.getItem('ansWrong')
+    //     let numAns = parseInt(wrongAns)
+    //     if (isNaN(numAns)) { 
+    //         numAns = 1
+    //     } else { 
+    //         numAns++
+    //     }
+    //     localStorage.setItem('ansWrong', numAns.toString())
+    // }
