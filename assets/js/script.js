@@ -13,8 +13,14 @@ startButton.addEventListener('click', startQuiz)
 //     nextQuestion()
 // })
 
+// // quiz function
+// function fullQuiz() { 
+//     startQuiz();
+//     endQuiz();
+// }
+
 // function to start the quiz and show first question
-function startQuiz () { 
+function startQuiz() { 
     // removes start button during the quiz
     startButton.classList.add('hide')
     // start the timer
@@ -23,15 +29,19 @@ function startQuiz () {
     currentQuestionIndex = 0
     // removes 'hide' class from question element so the question shows
     questionContainerEl.classList.remove('hide')
+    // display next question and answers
     nextQuestion()
-    // endQuiz() (has not yet created)
-}
+};
 
 // function to show first/next question when previous question is answered
 function nextQuestion() { 
-    // displays question and answer choices
-    showQuestion(currentQuestionIndex)
-}
+    if (questions.length == currentQuestionIndex) {
+        endQuiz();
+    } else { 
+        // displays question and answer choices
+        showQuestion(currentQuestionIndex)        
+    }
+};
 
 // function to disply question and answer choices in quiz box
 function showQuestion(index) { 
@@ -55,7 +65,7 @@ function showQuestion(index) {
         button.addEventListener('click', answerSelect)
         answerButtonsEl.appendChild(button)        
     })
-}
+};
 
 // function to reset quiz box when previous question is answered
 function resetQuestion() { 
@@ -63,10 +73,10 @@ function resetQuestion() {
     while (answerButtonsEl.firstChild) { 
         answerButtonsEl.removeChild(answerButtonsEl.firstChild)
     }
-}
+};
 
-// // use when figuring out final score
-// let ansCorrect = 0
+// use when figuring out final score
+let ansCorrect = 0
 
 // function for when an answer is selected
 function answerSelect(event) { 
@@ -74,34 +84,82 @@ function answerSelect(event) {
     const selectedButton = event.target
     if (this.dataset.correct) {
         alert('Correct')
+        ansCorrect++;
     } else {
         timeRemaining = timeRemaining - 5;
         alert('Incorrect!')
     }
+    // Uncaught TypeError: Cannot read property 'question' of undefined (next line) -- happens after all questions are answered
     currentQuestionIndex++
-    showQuestion(currentQuestionIndex)
-}
+    nextQuestion(currentQuestionIndex)
+};
 
 let timeLeft = ''
-let timeRemaining = 25
+let timeRemaining = 10
 function timer() { 
     const timeInterval = setInterval(function() { 
         if (timeRemaining >= 0) { 
-            console.log(timeRemaining, timeLeft)
-            timeLeft = 'Timer: ' + timeRemaining
+            let min = Math.floor(timeRemaining/60)
+            let sec = timeRemaining - (min*60)
+            sec = sec < 10 ? '0' + sec : sec;
+            timeLeft = 'Timer: ' + min + ':' + sec
             timerEl.textContent = timeLeft
+            console.log(timeRemaining, timeLeft);
             timeRemaining--
         } else { 
+            // timeRemaining = 0;
             alert('Times Up!')
             clearInterval(timeInterval)
+            endQuiz()
         }
-
-        // decrement timer on wrong answers
     }, 1000)
-}
+};
+
+// endQuiz variables
+let scoreCorrect = ansCorrect + '/5 '
+let scoreTime = 'Time: ' + timeRemaining + ' sec'
+let finalScore = scoreCorrect + scoreTime
+// const highScoresList = document.getElementById('#highScoresList')
+// const highScores = JSON.parse(localStorage.getItem("highScores"))
+let highScores = [];
+
+// when all of the questions have been answered OR the timer reaches 0
+function endQuiz() { 
+    // display final score
+    alert('Your final score is ' + scoreCorrect);
+
+    // ask if the user would like to save their score to the high scores
+    if (confirm("Would you like to save your score?")) { 
+        // if yes,
+        // save [initials, score] to local storage
+        let score = localStorage.setItem(prompt("Please enter your name or initials:"), finalScore)
+        debugger;
+
+        // add score to the high scores list on the left
+        highScores.push(score)
+        highScores.sort((a,b) => b.score - a.score);
+        highScores.splice(5);
+
+        // localStorage.setItem(highScores, JSON.stringify(score));
+    };
+
+    // ask if the user wants to play again
+    if (confirm("Would you like to try again?")) { 
+        // if yes, run quiz again
+        alert('GO!')
+        startQuiz();
+    } else { 
+        alert('Thank you for taking the quiz! Come back soon and try to beat the high score!')
+    }
+};
+// // function for high scores
+// function saveHighScore(e) { 
+//     e.preventDefault();
 
 
-// questions/answers object
+// }
+
+// questions/answers array
 const questions = [
     {
         question: '2+2=?',
@@ -128,7 +186,7 @@ const questions = [
         answer: ['Cat', 'Dog'],
         correct: 'Dog'
     }
-]
+];
 
 
     // // retrives the true 'correct' value in the answers dataset --used for storing info about # of correct answers in localStorage
