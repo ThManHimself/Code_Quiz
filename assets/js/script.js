@@ -1,26 +1,18 @@
 const startButton = document.getElementById('start-btn')
-// const nextButton = document.getElementById('next-btn');
 const questionContainerEl = document.getElementById('question-container')
 const questionEl = document.getElementById('question')
 const answerButtonsEl = document.getElementById('answer-buttons')
 const timerEl = document.getElementById('countdown')
 
 let currentQuestionIndex = 0
+// use when figuring out final score
+let ansCorrect = 0;
 
 startButton.addEventListener('click', startQuiz)
-// nextButton.addEventListener('click', () => { 
-//     currentQuestionIndex++
-//     nextQuestion()
-// })
-
-// // quiz function
-// function fullQuiz() { 
-//     startQuiz();
-//     endQuiz();
-// }
 
 // function to start the quiz and show first question
 function startQuiz() { 
+    ansCorrect = 0;
     // removes start button during the quiz
     startButton.classList.add('hide')
     // start the timer
@@ -57,15 +49,31 @@ function showQuestion(index) {
         button.classList.add('btn')
         // inputs each answer choice as text into button fields
         button.innerText = answer
-        // if the clicked answer is correct, ??
-        if (answer === questions[index].correct) {            
+        // if the clicked answer is correct,
+        if (answer === questions[index].correct) { 
             button.dataset.correct = questions[index].correct
         }
-        // when the user clicks one of the answers, run anserSelect()
+        // when the user clicks one of the answers, run answerSelect()
         button.addEventListener('click', answerSelect)
-        answerButtonsEl.appendChild(button)        
+        answerButtonsEl.appendChild(button)
     })
 };
+
+function renderHighScores() { 
+    // make a bridge to the html/dom so we can modify an area
+    var $highScoreDisplay = document.getElementById('highScores');
+    var $listToInsert = '';
+    // get all high scores
+    var highScores = getLocalStorage();
+    // display only the top 5
+    highScores.length = 5
+    // loop over all the scores and append them to page
+    for (let i=0; i < highScores.length; i++) {
+        $listToInsert += `<li>${highScores[i].name}: ${highScores[i].score}</>`
+    }
+    $highScoreDisplay.innerHTML = $listToInsert;
+}
+renderHighScores();
 
 // function to reset quiz box when previous question is answered
 function resetQuestion() { 
@@ -74,9 +82,6 @@ function resetQuestion() {
         answerButtonsEl.removeChild(answerButtonsEl.firstChild)
     }
 };
-
-// use when figuring out final score
-let ansCorrect = 0
 
 // function for when an answer is selected
 function answerSelect(event) { 
@@ -89,15 +94,15 @@ function answerSelect(event) {
         timeRemaining = timeRemaining - 5;
         alert('Incorrect!')
     }
-    // Uncaught TypeError: Cannot read property 'question' of undefined (next line) -- happens after all questions are answered
     currentQuestionIndex++
     nextQuestion(currentQuestionIndex)
 };
 
 let timeLeft = ''
-let timeRemaining = 10
+let timeRemaining = 75
+let timeInterval;
 function timer() { 
-    const timeInterval = setInterval(function() { 
+    timeInterval = setInterval(function() { 
         if (timeRemaining >= 0) { 
             let min = Math.floor(timeRemaining/60)
             let sec = timeRemaining - (min*60)
@@ -109,40 +114,31 @@ function timer() {
         } else { 
             // timeRemaining = 0;
             alert('Times Up!')
-            clearInterval(timeInterval)
             endQuiz()
         }
     }, 1000)
 };
 
-// endQuiz variables
-let scoreCorrect = ansCorrect + '/5 '
-let scoreTime = 'Time: ' + timeRemaining + ' sec'
-let finalScore = scoreCorrect + scoreTime
-// const highScoresList = document.getElementById('#highScoresList')
-// const highScores = JSON.parse(localStorage.getItem("highScores"))
 let highScores = [];
 
 // when all of the questions have been answered OR the timer reaches 0
 function endQuiz() { 
+    clearInterval(timeInterval)
+    let scoreCorrect = ansCorrect + '/5 '
+    // let scoreTime = 'Time: ' + timeRemaining + ' sec'
+    let finalScore = parseInt(ansCorrect) + parseInt(timeRemaining);
+    // endQuiz variables
     // display final score
-    alert('Your final score is ' + scoreCorrect);
-
+    alert('Your final score is ' + finalScore);
+    
     // ask if the user would like to save their score to the high scores
     if (confirm("Would you like to save your score?")) { 
         // if yes,
         // save [initials, score] to local storage
-        let score = localStorage.setItem(prompt("Please enter your name or initials:"), finalScore)
-        debugger;
-
-        // add score to the high scores list on the left
-        highScores.push(score)
-        highScores.sort((a,b) => b.score - a.score);
-        highScores.splice(5);
-
-        // localStorage.setItem(highScores, JSON.stringify(score));
+        let initials = prompt("Please enter your name or initials:")
+        setLocalStorage({name: initials, score: finalScore, scoreCorrect, timeRemaining})
     };
-
+    
     // ask if the user wants to play again
     if (confirm("Would you like to try again?")) { 
         // if yes, run quiz again
@@ -152,62 +148,45 @@ function endQuiz() {
         alert('Thank you for taking the quiz! Come back soon and try to beat the high score!')
     }
 };
-// // function for high scores
-// function saveHighScore(e) { 
-//     e.preventDefault();
 
+function getLocalStorage () {
+    return JSON.parse(localStorage.getItem('highScores')) || [] // [{}, {},...]
+}
+function setLocalStorage(elementToAdd) { //element to add is like -> {name: "pc", score: 54}
+    let currentStorage = getLocalStorage() // []
+    currentStorage.push(elementToAdd); // [... everythingbfore, elementToAdd]
+    //probably should sort the high scores so they are in order of highest score to lowst.
+    currentStorage.sort((a,b) => b.score - a.score);
+    console.log('currentStorage is sorted?')
+    console.log(currentStorage);
+    localStorage.setItem('highScores', JSON.stringify(currentStorage));
+    return;
+}
 
-// }
-
-// questions/answers array
 const questions = [
     {
-        question: '2+2=?',
-        answer: [ 4, 22, 15, 84],
-        correct: 4
+        question: "Who invented JavaScript?",
+        answer: [ "Douglas Crockford", "Sheryl Sandberg", "Brendan Eich", "Larry David"],
+        correct: "Brendan Eich"
     },
     {
-        question: 'a+b=?',
-        answer: ['ab', 'c', 'asdf', 'asdfasdf'],
-        correct: 'c'
+        question: "Which JavaScript label catches all the values, except for the ones specified?",
+        answer: ["catch", "label", "try", "default"],
+        correct: "default"
     },
     {
-        question: '4*2=?',
-        answer: [8, 44, 42, 24],
-        corect: 8
+        question: "How do you find the minimum of x and y using JavaScript?",
+        answer: ["min(x,y);", "Math.min(x,y)", "Math.min(xy)", "min(xy);"],
+        correct: "Math.min(x,y)"
     },
     {
-        question: 'x-y=?',
-        answer: [1, 2, 3, 4],
-        correct: 1 
+        question: "JavaScript is a ___ -side programming language.",
+        answer: ["Client", "server", "Both", "None"],
+        correct: "Both" 
     },
     {
-        question: 'Cat or dog?',
-        answer: ['Cat', 'Dog'],
-        correct: 'Dog'
+        question: "Which of the following will write the message “Hello DataFlair!” in an alert box?",
+        answer: ["alertBox('Helo DataFlair!');", "alert(Hello DataFlair!);", "msgAlert(“Hello DataFlair!”);", "alert(“Hello DataFlair!”);"],
+        correct: "alert(“Hello DataFlair!”);"
     }
 ];
-
-
-    // // retrives the true 'correct' value in the answers dataset --used for storing info about # of correct answers in localStorage
-    // const correct = selectedButton.dataset.correct
-    // if (correct) { 
-    //     let correctAns = localStorage.getItem('ansCorrect')
-    //     let numAns = parseInt(correctAns)
-    //     if (isNaN(numAns)) { 
-    //         numAns = 1
-    //     } else { 
-    //         numAns++
-    //     }
-    //     localStorage.setItem('ansCorrect', numAns.toString())
-    // } 
-    // else { 
-    //     let wrongAns = localStorage.getItem('ansWrong')
-    //     let numAns = parseInt(wrongAns)
-    //     if (isNaN(numAns)) { 
-    //         numAns = 1
-    //     } else { 
-    //         numAns++
-    //     }
-    //     localStorage.setItem('ansWrong', numAns.toString())
-    // }
