@@ -154,7 +154,7 @@ function getLocalStorage () {
 }
 function setLocalStorage(elementToAdd) { //element to add is like -> {name: "pc", score: 54}
     let currentStorage = getLocalStorage() // []
-    currentStorage.push(elementToAdd); // [... everythingbfore, elementToAdd]
+    currentStorage.push(elementToAdd); // [... everythingbefore, elementToAdd]
     //probably should sort the high scores so they are in order of highest score to lowst.
     currentStorage.sort((a,b) => b.score - a.score);
     console.log('currentStorage is sorted?')
